@@ -1,0 +1,61 @@
+:root {
+    --vscode-background: #1e1e1e;
+    --vscode-sidebar: #252526;
+    --vscode-statusBar: #007acc;
+    --vscode-font: 'Menlo', monospace;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 48px 250px 1fr;
+    grid-template-rows: 1fr 22px;
+    height: 100vh;
+}
+
+.activity-bar {
+    background: var(--vscode-sidebar);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+    gap: 16px;
+}
+
+.sidebar {
+    background: var(--vscode-sidebar);
+    border-right: 1px solid #3c3c3c;
+}
+
+.editor-area {
+    position: relative;
+}
+
+.tab-bar {
+    height: 35px;
+    background: var(--vscode-background);
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    gap: 8px;
+}
+
+.status-bar {
+    grid-column: 1 / -1;
+    background: var(--vscode-statusBar);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-family: var(--vscode-font);
+    font-size: 12px;
+}
+
+.command-palette {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    background: var(--vscode-sidebar);
+    border: 1px solid #3c3c3c;
+    z-index: 1000;
+}
