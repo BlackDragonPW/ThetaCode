@@ -1,204 +1,143 @@
+// theta.js
 let editor;
 let currentFile = null;
 
-// File System Manager
-class FileSystem {
-    constructor() {
-        this.storageKey = 'theta-files';
-        this.structure = this.loadStructure();
+// VS Code-like Keybindings
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        saveFile();
     }
-
-    loadStructure() {
-        const defaultStructure = {
-            name: 'root',
-            type: 'folder',
-            children: []
-        };
-        const saved = localStorage.getItem(this.storageKey);
-        return saved ? JSON.parse(saved) : defaultStructure;
-    }
-
-    saveStructure() {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.structure));
-        this.renderFileTree();
-    }
-
-    createFile(path, content = '') {
-        const parts = path.split('/');
-        const fileName = parts.pop();
-        let current = this.structure;
-
-        for (const part of parts) {
-            let folder = current.children.find(c => c.name === part && c.type === 'folder');
-            if (!folder) {
-                folder = { name: part, type: 'folder', children: [] };
-                current.children.push(folder);
-            }
-            current = folder;
-        }
-
-        current.children.push({
-            name: fileName,
-            type: 'file',
-            content,
-            path: path
-        });
-        this.saveStructure();
-    }
-
-    deleteAll() {
-        localStorage.removeItem(this.storageKey);
-        this.structure = this.loadStructure();
-        this.saveStructure();
-    }
-
-    renderFileTree() {
-        const container = document.getElementById('file-tree');
-        container.innerHTML = '';
-        this.renderNode(this.structure, container);
-    }
-
-    renderNode(node, container, depth = 0) {
-        const element = document.createElement('div');
-        element.className = node.type === 'folder' ? 'folder' : 'file-item';
-        element.style.paddingLeft = `${depth * 20}px`;
-        element.innerHTML = `
-            <span>${node.type === 'folder' ? '📁' : '📄'} ${node.name}</span>
-            ${node.type === 'file' ? `<button onclick="deleteFile('${node.path}')">🗑️</button>` : ''}
-        `;
-
-        if (node.type === 'folder') {
-            element.addEventListener('click', () => this.toggleFolder(node, element));
-            const childrenContainer = document.createElement('div');
-            childrenContainer.style.display = 'none';
-            node.children.forEach(child => this.renderNode(child, childrenContainer, depth + 1));
-            element.appendChild(childrenContainer);
-        } else {
-            element.addEventListener('click', () => this.openFile(node));
-        }
-
-        container.appendChild(element);
-    }
-
-    toggleFolder(node, element) {
-        const children = element.querySelector('div');
-        children.style.display = children.style.display === 'none' ? 'block' : 'none';
-    }
-
-    openFile(file) {
-        currentFile = file.path;
-        editor.setValue(file.content);
-        document.getElementById('file-path').textContent = file.path;
-    }
-}
-
-// ThetaCode Runner
-class ThetaCodeRunner {
-    constructor() {
-        this.bots = new Map();
-    }
-
-    run(code) {
-        try {
-            const output = [];
-            const lines = code.split('\n').filter(l => l.trim());
-            
-            lines.forEach(line => {
-                if (line.startsWith('create bot')) {
-                    const [, name, platform] = line.match(/create bot "(.*?)" platform "(.*?)"/);
-                    this.bots.set(name, { platform, status: 'active' });
-                    output.push(`🤖 Created ${platform} bot: ${name}`);
-                }
-                else if (line.startsWith('on')) {
-                    const [, botName, trigger, response] = line.match(/on (.*?) receives "(.*?)" respond with "(.*?)"/);
-                    output.push(`🔗 ${botName} will respond to "${trigger}"`);
-                }
-                else if (line.startsWith('print')) {
-                    const [, message] = line.match(/print "(.*?)"/);
-                    output.push(`📢 ${message}`);
-                }
-            });
-
-            return { success: true, output: output.join('\n') };
-        } catch (error) {
-            return { success: false, error: `🚨 Error: ${error.message}` };
-        }
-    }
-}
-
-// UI Components
-class Dialog {
-    static show() {
-        document.getElementById('confirm-dialog').style.display = 'flex';
-    }
-
-    static hide() {
-        document.getElementById('confirm-dialog').style.display = 'none';
-    }
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Monaco Editor
-    require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
-    require(['vs/editor/editor.main'], () => {
-        editor = monaco.editor.create(document.getElementById('editor'), {
-            theme: 'vs-dark',
-            automaticLayout: true,
-            minimap: { enabled: true },
-            scrollBeyondLastLine: false,
-            fontSize: 14,
-            lineHeight: 24
-        });
-    });
-
-    // Initialize File System
-    window.fileSystem = new FileSystem();
-    window.fileSystem.renderFileTree();
 });
 
-// Global Functions
+// File System (LocalStorage-based)
+const fileSystem = {
+    getStructure: () => JSON.parse(localStorage.getItem('vscode-files') || {
+        name: 'workspace',
+        children: []
+    },
+    
+    saveFile: (path, content) => {
+        const parts = path.split('/');
+        let current = fileSystem.getStructure();
+        
+        parts.forEach((part, index) => {
+            if(index === parts.length - 1) {
+                current.children.push({
+                    name: part,
+                    type: 'file',
+                    content: content,
+                    path: path
+                });
+            } else {
+                let folder = current.children.find(c => c.name === part && c.type === 'folder');
+                if(!folder) {
+                    folder = { name: part, type: 'folder', children: [] };
+                    current.children.push(folder);
+                }
+                current = folder;
+            }
+        });
+        
+        localStorage.setItem('vscode-files', JSON.stringify(current));
+    },
+
+    deleteAll: () => {
+        localStorage.removeItem('vscode-files');
+        editor.setValue('');
+        updateFileTree();
+    }
+};
+
+// Monaco Editor Setup
+require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
+require(['vs/editor/editor.main'], () => {
+    editor = monaco.editor.create(document.getElementById('editor'), {
+        value: '',
+        language: 'thetacode',
+        theme: 'vs-dark',
+        minimap: { enabled: true },
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+        roundedSelection: false,
+        padding: { top: 10 },
+        lineNumbers: 'on',
+        contextmenu: false,
+        fontSize: 14,
+        lineHeight: 24,
+        renderLineHighlight: 'all'
+    });
+    
+    // Track cursor position
+    editor.onDidChangeCursorPosition(e => {
+        document.querySelector('.line-info').textContent = 
+            `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
+    });
+});
+
+// ThetaCode Language
+monaco.languages.register({ id: 'thetacode' });
+monaco.languages.setMonarchTokensProvider('thetacode', {
+    keywords: [
+        'create', 'bot', 'platform', 'api_code', 'on', 'receives', 'respond', 
+        'with', 'deploy', 'print', 'load', 'data', 'from', 'filter', 'where'
+    ],
+    tokenizer: {
+        root: [
+            [/"(?:[^"\\]|\\.)*"/, 'string'],
+            [/\/\/.*$/, 'comment'],
+            [/\d+\.?\d*/, 'number'],
+            [/@[a-zA-Z_]\w*/, 'annotation'],
+            [/[a-zA-Z_]\w*/, {
+                cases: { '@keywords': 'keyword', '@default': 'identifier' }
+            }],
+        ]
+    }
+});
+
+// UI Functions
 function createFile() {
     const path = prompt('Enter file path (e.g., src/main.tc):');
-    if (path) fileSystem.createFile(path);
-}
-
-function createFolder() {
-    const path = prompt('Enter folder path (e.g., src/utils):');
-    if (path) fileSystem.createFile(`${path}/.keep`, '');
-}
-
-function deleteFile(path) {
-    if (confirm(`Delete ${path}?`)) {
-        // Implement file deletion logic
+    if(path) {
+        fileSystem.saveFile(path, '');
+        updateFileTree();
     }
 }
 
 function deleteAllFiles() {
     fileSystem.deleteAll();
-    editor.setValue('');
-    Dialog.hide();
     showOutput('All files deleted successfully');
+    closeDialog();
 }
 
-function showConfirmDialog() {
-    Dialog.show();
+function updateFileTree() {
+    const tree = fileSystem.getStructure();
+    const container = document.getElementById('file-tree');
+    container.innerHTML = renderTree(tree);
 }
 
-function toggleSidebar() {
-    document.querySelector('.sidebar').classList.toggle('active');
+function renderTree(node) {
+    return `
+        <div class="node ${node.type}">
+            ${node.type === 'folder' ? '📁' : '📄'} ${node.name}
+            ${node.children ? node.children.map(child => renderTree(child)).join('') : ''}
+        </div>
+    `;
 }
 
-function runCode() {
-    const runner = new ThetaCodeRunner();
-    const result = runner.run(editor.getValue());
-    showOutput(result.output || result.error);
-}
-
+// VS Code-like Output Channel
 function showOutput(message) {
-    document.getElementById('output').textContent = message;
+    const output = document.getElementById('output');
+    output.textContent += `\n${new Date().toLocaleTimeString()}: ${message}`;
+    output.scrollTop = output.scrollHeight;
 }
 
-function clearOutput() {
-    document.getElementById('output').textContent = '';
-}
+// Initialize
+window.onload = () => {
+    updateFileTree();
+    setInterval(() => {
+        if(currentFile) {
+            fileSystem.saveFile(currentFile, editor.getValue());
+        }
+    }, 30000);
+};
