@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThetaCode IDE</title>
+    <link rel="stylesheet" href="theta.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
+</head>
+<body>
+    <div class="mobile-menu" onclick="toggleSidebar()">☰</div>
+    
+    <nav class="sidebar">
+        <div class="file-actions">
+            <button onclick="createFile()">📄 New File</button>
+            <button onclick="createFolder()">📁 New Folder</button>
+            <button class="danger" onclick="showConfirmDialog()">🗑️ Delete All</button>
+        </div>
+        <div id="file-tree" class="file-tree"></div>
+    </nav>
+
+    <main class="editor-container">
+        <div id="editor"></div>
+        <div class="status-bar">
+            <span id="file-path">No file selected</span>
+            <div class="controls">
+                <button onclick="formatCode()">🔧 Format</button>
+                <button onclick="runCode()">▶ Run</button>
+            </div>
+        </div>
+    </main>
+
+    <div class="output-panel">
+        <div class="output-header">
+            <span>OUTPUT</span>
+            <button onclick="clearOutput()">Clear</button>
+        </div>
+        <pre id="output"></pre>
+    </div>
+
+    <div id="confirm-dialog" class="dialog">
+        <div class="dialog-content">
+            <h3>⚠️ Delete All Files?</h3>
+            <p>This will permanently erase all files and folders!</p>
+            <div class="dialog-actions">
+                <button class="danger" onclick="deleteAllFiles()">Confirm Delete</button>
+                <button onclick="hideDialog()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="theta.js"></script>
+</body>
+</html>
