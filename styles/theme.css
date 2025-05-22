@@ -1,0 +1,132 @@
+/* styles/theme.css */
+
+/* VS Code Dark Theme Variables */
+:root {
+    /* Base Colors */
+    --vscode-background: #1e1e1e;
+    --vscode-foreground: #d4d4d4;
+    --vscode-selectionBackground: #264f78;
+    --vscode-focusBorder: #007fd4;
+    
+    /* UI Colors */
+    --vscode-sideBar-background: #252526;
+    --vscode-statusBar-background: #007acc;
+    --vscode-editorGroupHeader-tabsBackground: #2d2d2d;
+    --vscode-tab-activeBackground: #1e1e1e;
+    --vscode-editor-lineHighlightBorder: #2a2d2e;
+    
+    /* Text Colors */
+    --vscode-editor-foreground: #d4d4d4;
+    --vscode-editorLineNumber-foreground: #858585;
+    --vscode-editorLineNumber-activeForeground: #c6c6c6;
+    --vscode-editor-selectionHighlightBackground: #add6ff26;
+    
+    /* Syntax Highlighting */
+    --vscode-keyword: #569cd6;
+    --vscode-string: #ce9178;
+    --vscode-number: #b5cea8;
+    --vscode-comment: #6a9955;
+    --vscode-function: #dcdcaa;
+    --vscode-parameter: #9cdcfe;
+}
+
+/* Global Theme Styles */
+body {
+    background-color: var(--vscode-background);
+    color: var(--vscode-foreground);
+}
+
+/* Activity Bar */
+.activity-bar {
+    background-color: var(--vscode-sideBar-background);
+    border-right: 1px solid var(--vscode-editor-lineHighlightBorder);
+}
+
+.activity-item {
+    color: var(--vscode-editorLineNumber-foreground);
+}
+
+.activity-item:hover {
+    background-color: var(--vscode-editor-selectionHighlightBackground);
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: var(--vscode-sideBar-background);
+    border-right: 1px solid var(--vscode-editor-lineHighlightBorder);
+}
+
+.file-item {
+    color: var(--vscode-foreground);
+}
+
+.file-item:hover {
+    background-color: var(--vscode-selectionBackground);
+}
+
+/* Editor Tabs */
+.tab-bar {
+    background-color: var(--vscode-editorGroupHeader-tabsBackground);
+}
+
+.tab {
+    color: var(--vscode-editorLineNumber-foreground);
+    background-color: var(--vscode-editorGroupHeader-tabsBackground);
+}
+
+.tab.active {
+    color: var(--vscode-foreground);
+    background-color: var(--vscode-tab-activeBackground);
+    border-bottom: 2px solid var(--vscode-focusBorder);
+}
+
+/* Status Bar */
+.status-bar {
+    background-color: var(--vscode-statusBar-background);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Monaco Editor Theme Overrides */
+.monaco-editor {
+    --vscode-editor-background: var(--vscode-background);
+}
+
+.monaco-editor .margin {
+    background-color: var(--vscode-background);
+}
+
+.mtk1 { color: var(--vscode-editor-foreground); }
+.mtk5 { color: var(--vscode-keyword); }
+.mtk8 { color: var(--vscode-string); }
+.mtk20 { color: var(--vscode-comment); }
+.mtk12 { color: var(--vscode-function); }
+.mtk7 { color: var(--vscode-parameter); }
+.mtk3 { color: var(--vscode-number); }
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--vscode-background);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--vscode-editorLineNumber-foreground);
+    border-radius: 4px;
+}
+
+/* Command Palette */
+.command-palette {
+    background-color: var(--vscode-sideBar-background);
+    border: 1px solid var(--vscode-editor-lineHighlightBorder);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.command-palette input {
+    background-color: var(--vscode-background);
+    color: var(--vscode-foreground);
+    border: 1px solid var(--vscode-focusBorder);
+}
